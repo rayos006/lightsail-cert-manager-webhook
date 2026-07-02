@@ -1,0 +1,8 @@
+apiVersion: v2
+name: lightsail-webhook
+description: cert-manager ACME DNS-01 solver webhook for AWS Lightsail DNS
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+sources:
+  - https://github.com/rayos006/lightsail-cert-manager-webhook

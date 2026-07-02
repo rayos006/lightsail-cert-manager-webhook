@@ -1,0 +1,31 @@
+# groupName is baked into the API group the webhook registers.
+# Change this to a domain you own if forking. It must match the value
+# passed to the webhook via the GROUP_NAME env var.
+groupName: acme.example.com
+
+certManager:
+  namespace: cert-manager
+  serviceAccountName: cert-manager
+
+image:
+  repository: rayos006/lightsail-cert-manager-webhook
+  tag: v0.1.0
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 443
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
