@@ -1,18 +1,22 @@
-# Multi-stage build. Static binary in a minimal runtime.
-FROM golang:1.23-alpine AS build
-
-RUN apk add --no-cache git
+# Multi-stage build. The build stage always runs on the native build host
+# ($BUILDPLATFORM) and cross-compiles for $TARGETARCH, so arm64 images
+# don't pay the QEMU emulation tax. Runtime is distroless/static: no
+# package installs, CA certs included. Root variant because the webhook
+# binds :443.
+FROM --platform=$BUILDPLATFORM golang:1.23-alpine AS build
 
 WORKDIR /workspace
+
+# Modules in their own layer so source changes don't re-download them.
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . .
 
-# go mod tidy also generates go.sum if it's missing — lets us build even
-# when the repo doesn't ship go.sum (e.g. first release, before we have
-# a Go install locally).
-RUN go mod tidy && \
-    CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' .
+ARG TARGETOS TARGETARCH
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    go build -o webhook -ldflags '-s -w' .
 
-FROM alpine:3.20
-RUN apk add --no-cache ca-certificates
+FROM gcr.io/distroless/static:latest
 COPY --from=build /workspace/webhook /usr/local/bin/webhook
 ENTRYPOINT ["webhook"]
