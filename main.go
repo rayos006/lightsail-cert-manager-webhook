@@ -37,6 +37,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook"
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/cmd"
@@ -64,10 +65,10 @@ type lightsailDNSProviderConfig struct {
 
 	// AccessKeyIDSecretRef points at a Secret key holding the IAM user's
 	// access key id (in the namespace of the ClusterIssuer's solver).
-	AccessKeyIDSecretRef v1alpha1.SecretKeySelector `json:"accessKeyIDSecretRef"`
+	AccessKeyIDSecretRef cmmeta.SecretKeySelector `json:"accessKeyIDSecretRef"`
 
 	// SecretAccessKeySecretRef same for the secret key.
-	SecretAccessKeySecretRef v1alpha1.SecretKeySelector `json:"secretAccessKeySecretRef"`
+	SecretAccessKeySecretRef cmmeta.SecretKeySelector `json:"secretAccessKeySecretRef"`
 }
 
 func (c *lightsailDNSProviderSolver) Name() string { return "lightsail" }
@@ -183,7 +184,7 @@ func (c *lightsailDNSProviderSolver) setup(ch *v1alpha1.ChallengeRequest) (*ligh
 }
 
 // secret pulls a value from a Kubernetes Secret in the given namespace.
-func (c *lightsailDNSProviderSolver) secret(ns string, ref v1alpha1.SecretKeySelector) (string, error) {
+func (c *lightsailDNSProviderSolver) secret(ns string, ref cmmeta.SecretKeySelector) (string, error) {
 	s, err := c.client.CoreV1().Secrets(ns).Get(context.Background(), ref.Name, metav1.GetOptions{})
 	if err != nil {
 		return "", fmt.Errorf("getting secret %s/%s: %w", ns, ref.Name, err)
