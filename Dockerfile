@@ -1,16 +1,16 @@
 # Multi-stage build. Static binary in a minimal runtime.
-FROM golang:1.23-alpine AS build_deps
+FROM golang:1.23-alpine AS build
 
 RUN apk add --no-cache git
 
 WORKDIR /workspace
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-
-FROM build_deps AS build
 COPY . .
-RUN CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' .
+
+# go mod tidy also generates go.sum if it's missing — lets us build even
+# when the repo doesn't ship go.sum (e.g. first release, before we have
+# a Go install locally).
+RUN go mod tidy && \
+    CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' .
 
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates
