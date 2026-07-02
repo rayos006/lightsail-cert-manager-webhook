@@ -41,9 +41,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: rayos006/lightsail-cert-manager-webhook
+          # Keep the v prefix (v0.1.0) — the chart's values.yaml image.tag
+          # references the v-prefixed form.
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern=v{{version}}
+            type=semver,pattern=v{{major}}.{{minor}}
             type=ref,event=branch
             type=sha,format=short
       - uses: docker/login-action@v3
